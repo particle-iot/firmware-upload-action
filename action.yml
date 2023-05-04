@@ -1,0 +1,30 @@
+name: 'Particle Firmware Upload Action'
+description: 'Uploads product firmware compiled in GitHub Actions to Particle'
+inputs:
+  particle-access-token:
+    required: true
+    description: 'Access token for Particle'
+    default: ''
+  firmware-path:
+    required: true
+    description: 'Binary file containing the product firmware'
+    default: ''
+  firmware-version:
+    required: true
+    description: 'The version number of the firmware binary you are uploading'
+    default: ''
+  product-id:
+    required: true
+    description: 'Product ID for the Particle'
+    default: ''
+  title:
+    required: true
+    description: 'Title of the firmware version'
+    default: ''
+  description:
+    required: false
+    description: 'Optionally provide a description for the new firmware version'
+    default: ''
+runs:
+  using: 'node16'
+  main: 'dist/index.js'
