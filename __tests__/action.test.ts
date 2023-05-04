@@ -89,7 +89,7 @@ describe('uploadFirmware', () => {
 describe('run', () => {
 
   it('should validate inputs and upload firmware successfully upload', async () => {
-    process.env['INPUT_ACCESS-TOKEN'] = 'abcde'.repeat(8)
+    process.env['INPUT_PARTICLE-ACCESS-TOKEN'] = 'abcde'.repeat(8)
     process.env['INPUT_FIRMWARE-PATH'] = '__tests__/fixtures/productFirmware.bin'
     process.env['INPUT_FIRMWARE-VERSION'] = '1'
     process.env['INPUT_PRODUCT-ID'] = '201'
@@ -101,7 +101,7 @@ describe('run', () => {
   })
 
   it('should fail with firmware-path not set', async () => {
-    process.env['INPUT_ACCESS-TOKEN'] = 'abcde'.repeat(8)
+    process.env['INPUT_PARTICLE-ACCESS-TOKEN'] = 'abcde'.repeat(8)
     process.env['INPUT_FIRMWARE-PATH'] = ''
     process.env['INPUT_FIRMWARE-VERSION'] = '1'
     process.env['INPUT_PRODUCT-ID'] = '400'
@@ -115,7 +115,7 @@ describe('run', () => {
   })
 
   it('should fail with empty product id', async () => {
-    process.env['INPUT_ACCESS-TOKEN'] = 'abcde'.repeat(8)
+    process.env['INPUT_PARTICLE-ACCESS-TOKEN'] = 'abcde'.repeat(8)
     process.env['INPUT_FIRMWARE-PATH'] = 'firmware.bin'
     process.env['INPUT_FIRMWARE-VERSION'] = '1'
     process.env['INPUT_PRODUCT-ID'] = ''

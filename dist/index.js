@@ -4309,7 +4309,7 @@ exports.uploadFirmware = uploadFirmware;
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const accessToken = core.getInput('access-token', { required: true });
+            const accessToken = core.getInput('particle-access-token', { required: true });
             const firmwarePath = core.getInput('firmware-path', { required: true });
             const firmwareVersion = core.getInput('firmware-version', { required: true });
             const product = core.getInput('product-id', { required: true });
