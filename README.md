@@ -1,4 +1,6 @@
 # Particle Firmware Upload Action
+[![Build and Test](https://github.com/particle-iot/firmware-upload-action/actions/workflows/test.yml/badge.svg)](https://github.com/particle-iot/firmware-upload-action/actions/workflows/test.yml)
+
 
 A GitHub Action for uploading firmware binaries to Particle products.
 
