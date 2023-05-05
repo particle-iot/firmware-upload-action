@@ -1,103 +1,81 @@
-import { run, uploadFirmware } from "../src/action";
-import {expect, test, jest} from '@jest/globals'
+import {FirmwareUploadInputs, run, uploadFirmware} from '../src/action'
+import {expect, it, jest} from '@jest/globals'
 import * as core from '@actions/core'
-import {HttpClient, HttpClientResponse} from '@actions/http-client'
-import * as http from 'http'
-import * as net from 'net'
+import nock from 'nock'
 
-jest.mock('@actions/http-client')
-
-async function emptyMockReadBody(): Promise<string> {
-  return new Promise(resolve => {
-    resolve('')
-  })
-}
-
-beforeAll(() => {
-  jest
-    .spyOn(HttpClient.prototype, 'post')
-    .mockImplementation(async (url, form, headers) => {
-      const mockMessage = new http.IncomingMessage(new net.Socket())
-      let mockReadBody = emptyMockReadBody
-      let response = {};
-
-      // Look at the url and return the appropriate response for the tests
-      if (url === 'https://api.particle.io/v1/products/400/firmware') {
-        mockMessage.statusCode = 400
-        response = {
-          ok: false,
-          error: "Firmware version already exists."
-        }
-      } else {
-        mockMessage.statusCode = 201
-        response = {
-          ok: true,
-          title: 'some title',
-          uploaded_by: {
-            username: 'some username'
-          }
-        }
-      }
-
-      const returnData: string = JSON.stringify(response, null, 2)
-      mockReadBody = async function (): Promise<string> {
-        return new Promise(resolve => {
-          resolve(returnData)
-        })
-      }
-      return new Promise<HttpClientResponse>(resolve => {
-        resolve({
-          message: mockMessage,
-          readBody: mockReadBody
-        })
-      })
-    })
-})
+const firmwarePath = '__tests__/fixtures/productFirmware.bin'
 
 describe('uploadFirmware', () => {
-
-  it('should fail when the firmware version already exists in the product', async () => {
-    const params = {
-      accessToken: 'abcde'.repeat(8),
-      firmwarePath: '__tests__/fixtures/productFirmware.bin',
+  it('should successfully upload firmware', async () => {
+    const firmwareUploadInputs: FirmwareUploadInputs = {
+      accessToken: 'test-token',
+      firmwarePath,
       firmwareVersion: '1',
-      product: '400', // this test product has a firmware version 1 already
-      title: 'title',
-      description: 'smthng'
+      product: 'test-product',
+      title: 'Test Firmware',
+      description: 'Test firmware description'
     }
 
-    await expect(uploadFirmware(params)).rejects.toThrow('Error uploading firmware: Firmware version already exists.')
+    const scope = nock('https://api.particle.io')
+      .post(`/v1/products/${firmwareUploadInputs.product}/firmware`)
+      .reply(201, {
+        title: 'Test Firmware',
+        uploaded_by: {username: 'testuser'}
+      })
+
+    const result = await uploadFirmware(firmwareUploadInputs)
+
+    expect(result).toEqual({
+      title: 'Test Firmware',
+      uploaded_by: 'testuser'
+    })
+    expect(scope.isDone()).toBe(true)
   })
 
-  it('should upload firmware successfully', async () => {
-    const params = {
-      accessToken: 'abcde'.repeat(8),
-      firmwarePath: '__tests__/fixtures/productFirmware.bin',
+  it('should throw an error when the API call fails', async () => {
+    const firmwareUploadInputs: FirmwareUploadInputs = {
+      accessToken: 'test-token',
+      firmwarePath,
       firmwareVersion: '1',
-      product: '201',
-      title: 'title',
-      description: 'smthng'
+      product: 'test-product',
+      title: 'Test Firmware',
+      description: 'Test firmware description'
     }
-    const result = await uploadFirmware(params)
-    expect(result).toEqual({
-      title: 'some title',
-      uploaded_by: 'some username'
-    });
+
+    // Mock the API call to return a 400 error for duplicate firmware version
+    const scope = nock('https://api.particle.io')
+      .post(`/v1/products/${firmwareUploadInputs.product}/firmware`)
+      .reply(400, {
+        error_description: 'Firmware version already exists',
+        error: 'invalid_request'
+      })
+
+    await expect(uploadFirmware(firmwareUploadInputs)).rejects.toThrow(
+      'Error uploading firmware: {"error_description":"Firmware version already exists","error":"invalid_request"} (status code 400)'
+    )
+    expect(scope.isDone()).toBe(true)
   })
 })
 
 describe('run', () => {
-
   it('should validate inputs and upload firmware successfully upload', async () => {
     process.env['INPUT_PARTICLE-ACCESS-TOKEN'] = 'abcde'.repeat(8)
-    process.env['INPUT_FIRMWARE-PATH'] = '__tests__/fixtures/productFirmware.bin'
+    process.env['INPUT_FIRMWARE-PATH'] = firmwarePath
     process.env['INPUT_FIRMWARE-VERSION'] = '1'
     process.env['INPUT_PRODUCT-ID'] = '201'
-    process.env['INPUT_TITLE'] = 'smthng'
+    process.env['INPUT_TITLE'] = 'Test Firmware'
+
+    const scope = nock('https://api.particle.io')
+      .post(`/v1/products/201/firmware`)
+      .reply(201, {
+        title: 'Test Firmware',
+        uploaded_by: {username: 'testuser'}
+      })
 
     jest.spyOn(core, 'setFailed')
-    const result = await run()
+    await run()
     expect(core.setFailed).not.toHaveBeenCalled()
+    expect(scope.isDone()).toBe(true)
   })
 
   it('should fail with firmware-path not set', async () => {
@@ -108,7 +86,7 @@ describe('run', () => {
     process.env['INPUT_TITLE'] = 'smthng'
 
     jest.spyOn(core, 'setFailed')
-    const result = await run()
+    await run()
     expect(core.setFailed).toHaveBeenCalledWith(
       'Input required and not supplied: firmware-path'
     )
@@ -116,16 +94,15 @@ describe('run', () => {
 
   it('should fail with empty product id', async () => {
     process.env['INPUT_PARTICLE-ACCESS-TOKEN'] = 'abcde'.repeat(8)
-    process.env['INPUT_FIRMWARE-PATH'] = 'firmware.bin'
+    process.env['INPUT_FIRMWARE-PATH'] = firmwarePath
     process.env['INPUT_FIRMWARE-VERSION'] = '1'
     process.env['INPUT_PRODUCT-ID'] = ''
     process.env['INPUT_TITLE'] = 'smthng'
 
     jest.spyOn(core, 'setFailed')
-    const result = await run()
+    await run()
     expect(core.setFailed).toHaveBeenCalledWith(
       'Input required and not supplied: product-id'
     )
   })
-
 })

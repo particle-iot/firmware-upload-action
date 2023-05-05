@@ -1,20 +1,19 @@
 import * as core from '@actions/core'
-import {HttpClient} from '@actions/http-client'
 import fs from 'fs'
 import FormData from 'form-data'
+import got from 'got'
 
 function validAccessToken(accessToken: string): boolean {
   return accessToken.length === 40
 }
 
 function validProductId(productId: string): boolean {
-  return !isNaN(parseInt(productId))
+  return productId.length > 0
 }
 
 function validVersion(firmwareVersion: string): boolean {
   return !isNaN(parseInt(firmwareVersion))
 }
-
 function validTitle(title: string): boolean {
   return title.length > 0
 }
@@ -35,44 +34,47 @@ export async function uploadFirmware(
     description
   } = params
 
-  const fileContents = fs.readFileSync(firmwarePath)
   const form = new FormData()
-  form.append('binary', fileContents, firmwarePath)
+  const filename = firmwarePath.split('/').pop() || ''
+  form.append('binary', fs.createReadStream(firmwarePath), {
+    filename,
+    contentType: 'application/octet-stream'
+  })
   form.append('version', firmwareVersion)
   form.append('title', title)
+  form.append('description', description)
 
-  if (description) {
-    form.append('description', description)
+  const headers = {
+    ...form.getHeaders(),
+    authorization: `Bearer ${accessToken}`,
+    accept: 'application/json',
+    'x-api-version': '1.2.0'
   }
 
   const url = `https://api.particle.io/v1/products/${product}/firmware`
-  const headers = {
-    authorization: `Bearer ${accessToken}`,
-    accept: 'application/json'
-  } as {[id: string]: string}
-
-  headers[
-    'content-type'
-  ] = `multipart/form-data; boundary=${form.getBoundary()}`
-
-  const data = form.getBuffer().toString('utf-8')
-  const http = new HttpClient()
-  const response = await http.post(url, data, headers)
-  const responseBody = await response.readBody()
-
-  const json = JSON.parse(responseBody)
-  if (response.message.statusCode !== 201) {
-    throw new Error(`Error uploading firmware: ${json.error}`)
-  }
-
-  return {
-    title: json.title,
-    uploaded_by: json.uploaded_by.username
+  try {
+    const res = await got.post(url, {
+      body: form,
+      headers
+    })
+    const body = JSON.parse(res.body)
+    return {
+      title: body.title,
+      uploaded_by: body.uploaded_by.username
+    }
+  } catch (error) {
+    if (error instanceof got.HTTPError) {
+      throw new Error(
+        `Error uploading firmware: ${error.response.body} (status code ${error.response.statusCode})`
+      )
+    } else {
+      throw new Error(`Error uploading firmware: ${error}`)
+    }
   }
 }
 
 // make interface from inputs
-interface FirmwareUploadInputs {
+export interface FirmwareUploadInputs {
   accessToken: string
   firmwarePath: string
   firmwareVersion: string
@@ -95,7 +97,7 @@ export async function run(): Promise<void> {
     }
 
     if (!validProductId(product)) {
-      throw new Error('invalid device id')
+      throw new Error('invalid product id')
     }
 
     if (!validFirmwarePath(firmwarePath)) {
