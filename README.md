@@ -43,7 +43,10 @@ Documentation refers to the `main` branch, but please be aware that stability gu
 
 This is an example of a GitHub Actions pipeline that compiles a firmware project and uploads the compiled binary as an artifact.
 
-You will need to create a GitHub secret named `PARTICLE_ACCESS_TOKEN` with a Particle API access token that has permission to upload firmware binaries to your product.
+You will need to create a GitHub secret named `PARTICLE_ACCESS_TOKEN` with a Particle API access token.
+The access token should be an [API User](https://docs.particle.io/getting-started/cloud/cloud-api/#api-users) token.
+It needs the `firmware:create` scope to be able to upload firmware binaries.
+If you intend reuse the token to flash firmware to test devices, it will also need the `devices:update` scope.
 
 ```yaml
 name: Compile and Release
@@ -90,6 +93,6 @@ jobs:
           firmware-path: ${{ steps.compile.outputs.artifact-path }}
           firmware-version: ${{ steps.compile.outputs.firmware-version }}
           product-id: '<product-id>'
-          title: "Firmware v${{ steps.compile.outputs.firmware-version }}"
-          description: "GitHub Release: ${{ steps.release.outputs.html_url }}"
+          title: 'Firmware v${{ steps.compile.outputs.firmware-version }}'
+          description: '[Firmware v${{ steps.compile.outputs.firmware-version }} GitHub Release](${{ steps.release.outputs.html_url }})'
 ```
