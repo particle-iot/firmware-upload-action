@@ -85,7 +85,9 @@ jobs:
         with:
           artifacts: ${{ steps.compile.outputs.artifact-path }}
           generateReleaseNotes: 'true'
-          name: "Firmware v${{ steps.compile.outputs.firmware-version }}"
+          name: 'Firmware v${{ steps.compile.outputs.firmware-version }}'
+          tag: 'v${{ steps.compile.outputs.firmware-version }}'
+          commit: ${{ github.sha }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload product firmware to Particle
