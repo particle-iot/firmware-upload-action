@@ -35,7 +35,7 @@ export async function uploadFirmware(
   } = params
 
   const form = new FormData()
-  const filename = firmwarePath.split('/').pop() || ''
+  const filename = firmwarePath.split('/').pop() || 'firmware.bin'
   form.append('binary', fs.createReadStream(firmwarePath), {
     filename,
     contentType: 'application/octet-stream'

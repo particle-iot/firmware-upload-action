@@ -12197,7 +12197,7 @@ function uploadFirmware(params) {
     return __awaiter(this, void 0, void 0, function* () {
         const { accessToken, firmwarePath, firmwareVersion, product, title, description } = params;
         const form = new form_data_1.default();
-        const filename = firmwarePath.split('/').pop() || '';
+        const filename = firmwarePath.split('/').pop() || 'firmware.bin';
         form.append('binary', fs_1.default.createReadStream(firmwarePath), {
             filename,
             contentType: 'application/octet-stream'
