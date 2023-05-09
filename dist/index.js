@@ -12205,7 +12205,7 @@ function uploadFirmware(params) {
         form.append('version', firmwareVersion);
         form.append('title', title);
         form.append('description', description);
-        const headers = Object.assign(Object.assign({}, form.getHeaders()), { authorization: `Bearer ${accessToken}`, accept: 'application/json', 'x-api-version': '1.2.0' });
+        const headers = Object.assign(Object.assign({}, form.getHeaders()), { authorization: `Bearer ${accessToken}`, accept: 'application/json', 'user-agent': 'particle-firmware-upload-action', 'x-api-version': '1.2.0' });
         const url = `https://api.particle.io/v1/products/${product}/firmware`;
         try {
             const res = yield got_1.default.post(url, {

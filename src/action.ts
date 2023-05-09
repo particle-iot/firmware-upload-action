@@ -48,6 +48,7 @@ export async function uploadFirmware(
     ...form.getHeaders(),
     authorization: `Bearer ${accessToken}`,
     accept: 'application/json',
+    'user-agent': 'particle-firmware-upload-action',
     'x-api-version': '1.2.0'
   }
 
