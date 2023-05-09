@@ -16,7 +16,9 @@ describe('uploadFirmware', () => {
       description: 'Test firmware description'
     }
 
-    const scope = nock('https://api.particle.io')
+    const scope = nock('https://api.particle.io', {
+        reqheaders: { 'user-agent': 'particle-firmware-upload-action' }
+      })
       .post(`/v1/products/${firmwareUploadInputs.product}/firmware`)
       .reply(201, {
         title: 'Test Firmware',
@@ -43,7 +45,9 @@ describe('uploadFirmware', () => {
     }
 
     // Mock the API call to return a 400 error for duplicate firmware version
-    const scope = nock('https://api.particle.io')
+    const scope = nock('https://api.particle.io', {
+      reqheaders: { 'user-agent': 'particle-firmware-upload-action' }
+      })
       .post(`/v1/products/${firmwareUploadInputs.product}/firmware`)
       .reply(400, {
         error_description: 'Firmware version already exists',
