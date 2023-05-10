@@ -77,13 +77,19 @@ jobs:
       - name: Upload artifacts to GitHub
         uses: actions/upload-artifact@v3
         with:
-          path: ${{ steps.compile.outputs.artifact-path }}
+          path: |
+            ${{ steps.compile.outputs.firmware-path }}
+            ${{ steps.compile.outputs.target-path }}
 
+      - name: Create archive of target directory
+        run: |
+          tar -czf debug-objects.tar.gz ${{ steps.compile.outputs.target-path }}
+            
       - name: Create GitHub release
         id: release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: ${{ steps.compile.outputs.artifact-path }}
+          artifacts: ${{ steps.compile.outputs.firmware-path }},debug-objects.tar.gz
           generateReleaseNotes: 'true'
           name: 'Firmware v${{ steps.compile.outputs.firmware-version }}'
           tag: 'v${{ steps.compile.outputs.firmware-version }}'
@@ -94,7 +100,7 @@ jobs:
         uses: particle-iot/firmware-upload-action@v1
         with:
           particle-access-token: ${{ secrets.PARTICLE_ACCESS_TOKEN }}
-          firmware-path: ${{ steps.compile.outputs.artifact-path }}
+          firmware-path: ${{ steps.compile.outputs.firmware-path }}
           firmware-version: ${{ steps.compile.outputs.firmware-version }}
           product-id: '<product-id>'
           title: 'Firmware v${{ steps.compile.outputs.firmware-version }}'
