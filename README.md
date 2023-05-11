@@ -1,18 +1,18 @@
 # Particle Firmware Upload Action
 [![Build and Test](https://github.com/particle-iot/firmware-upload-action/actions/workflows/test.yml/badge.svg)](https://github.com/particle-iot/firmware-upload-action/actions/workflows/test.yml)
 
-
 A GitHub Action for uploading firmware binaries to Particle products.
 
 This action does not trigger OTA updates to devices. It only uploads the binary to the Particle cloud.
 
-> This project is currently under development with no stable v1 release yet.
-Documentation refers to the `main` branch, but please be aware that stability guarantees are not provided at this stage.
- 
+Other Actions for firmware development: [Compile](https://github.com/particle-iot/compile-action) | [Flash Device](https://github.com/particle-iot/flash-device-action) | Firmware Upload
+
+> This action is currently in public beta. Please [report](https://community.particle.io/) any issues you encounter.
+
 ## Usage
 
 ```yaml
-- uses: particle-iot/firmware-upload-action@main
+- uses: particle-iot/firmware-upload-action@v1
   with:
     # Particle access token
     # Required: true
@@ -40,6 +40,8 @@ Documentation refers to the `main` branch, but please be aware that stability gu
     # Required: false
     description: ''
 ```
+
+Also see official [Particle documentation](https://docs.particle.io/firmware/best-practices/github-actions/) for more details.
 
 ## Example Pipeline
 
@@ -69,7 +71,7 @@ jobs:
 
       - name: Compile application
         id: compile
-        uses: particle-iot/compile-action@main
+        uses: particle-iot/compile-action@v1
         with:
           particle-platform-name: 'boron'
           device-os-version: 'latest-lts'
@@ -77,13 +79,19 @@ jobs:
       - name: Upload artifacts to GitHub
         uses: actions/upload-artifact@v3
         with:
-          path: ${{ steps.compile.outputs.artifact-path }}
+          path: |
+            ${{ steps.compile.outputs.firmware-path }}
+            ${{ steps.compile.outputs.target-path }}
 
+      - name: Create archive of target directory
+        run: |
+          tar -czf debug-objects.tar.gz ${{ steps.compile.outputs.target-path }}
+            
       - name: Create GitHub release
         id: release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: ${{ steps.compile.outputs.artifact-path }}
+          artifacts: ${{ steps.compile.outputs.firmware-path }},debug-objects.tar.gz
           generateReleaseNotes: 'true'
           name: 'Firmware v${{ steps.compile.outputs.firmware-version }}'
           tag: 'v${{ steps.compile.outputs.firmware-version }}'
@@ -91,10 +99,10 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload product firmware to Particle
-        uses: particle-iot/firmware-upload-action@main
+        uses: particle-iot/firmware-upload-action@v1
         with:
           particle-access-token: ${{ secrets.PARTICLE_ACCESS_TOKEN }}
-          firmware-path: ${{ steps.compile.outputs.artifact-path }}
+          firmware-path: ${{ steps.compile.outputs.firmware-path }}
           firmware-version: ${{ steps.compile.outputs.firmware-version }}
           product-id: '<product-id>'
           title: 'Firmware v${{ steps.compile.outputs.firmware-version }}'
