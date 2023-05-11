@@ -2,7 +2,7 @@
   "name": "firmware-upload-action",
   "version": "0.0.0",
   "description": "Action for uploading precompiled firmware to a product",
-  "main": "dist/main.js",
+  "main": "dist/index.js",
   "scripts": {
     "start": "npx ncc run ./src/main.ts",
     "build": "npx ncc build ./src/main.ts",
