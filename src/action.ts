@@ -49,6 +49,7 @@ export async function uploadFirmware(
     authorization: `Bearer ${accessToken}`,
     accept: 'application/json',
     'user-agent': 'particle-firmware-upload-action',
+    'x-particle-tool': 'particle-firmware-upload-action',
     'x-api-version': '1.2.0'
   }
 

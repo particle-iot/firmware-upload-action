@@ -5,6 +5,11 @@ import nock from 'nock'
 
 const firmwarePath = '__tests__/fixtures/productFirmware.bin'
 
+const headers = {
+  'user-agent': 'particle-firmware-upload-action',
+  'x-particle-tool': 'particle-firmware-upload-action',
+}
+
 describe('uploadFirmware', () => {
   it('should successfully upload firmware', async () => {
     const firmwareUploadInputs: FirmwareUploadInputs = {
@@ -17,7 +22,7 @@ describe('uploadFirmware', () => {
     }
 
     const scope = nock('https://api.particle.io', {
-        reqheaders: { 'user-agent': 'particle-firmware-upload-action' }
+        reqheaders: headers
       })
       .post(`/v1/products/${firmwareUploadInputs.product}/firmware`)
       .reply(201, {
@@ -46,7 +51,7 @@ describe('uploadFirmware', () => {
 
     // Mock the API call to return a 400 error for duplicate firmware version
     const scope = nock('https://api.particle.io', {
-      reqheaders: { 'user-agent': 'particle-firmware-upload-action' }
+      reqheaders: headers
       })
       .post(`/v1/products/${firmwareUploadInputs.product}/firmware`)
       .reply(400, {
