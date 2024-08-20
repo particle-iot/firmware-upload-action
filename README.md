@@ -7,8 +7,6 @@ This action does not trigger OTA updates to devices. It only uploads the binary 
 
 Other Actions for firmware development: [Compile](https://github.com/particle-iot/compile-action) | [Flash Device](https://github.com/particle-iot/flash-device-action) | Firmware Upload
 
-> This action is currently in public beta. Please [report](https://community.particle.io/) any issues you encounter.
-
 ## Usage
 
 ```yaml
