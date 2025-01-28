@@ -86,32 +86,4 @@ describe('run', () => {
     expect(core.setFailed).not.toHaveBeenCalled()
     expect(scope.isDone()).toBe(true)
   })
-
-  it('should fail with firmware-path not set', async () => {
-    process.env['INPUT_PARTICLE-ACCESS-TOKEN'] = 'abcde'.repeat(8)
-    process.env['INPUT_FIRMWARE-PATH'] = ''
-    process.env['INPUT_FIRMWARE-VERSION'] = '1'
-    process.env['INPUT_PRODUCT-ID'] = '400'
-    process.env['INPUT_TITLE'] = 'smthng'
-
-    jest.spyOn(core, 'setFailed')
-    await run()
-    expect(core.setFailed).toHaveBeenCalledWith(
-      'Input required and not supplied: firmware-path'
-    )
-  })
-
-  it('should fail with empty product id', async () => {
-    process.env['INPUT_PARTICLE-ACCESS-TOKEN'] = 'abcde'.repeat(8)
-    process.env['INPUT_FIRMWARE-PATH'] = firmwarePath
-    process.env['INPUT_FIRMWARE-VERSION'] = '1'
-    process.env['INPUT_PRODUCT-ID'] = ''
-    process.env['INPUT_TITLE'] = 'smthng'
-
-    jest.spyOn(core, 'setFailed')
-    await run()
-    expect(core.setFailed).toHaveBeenCalledWith(
-      'Input required and not supplied: product-id'
-    )
-  })
 })

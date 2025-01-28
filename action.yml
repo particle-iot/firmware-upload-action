@@ -26,5 +26,5 @@ inputs:
     description: 'Optionally provide a description for the new firmware version'
     default: ''
 runs:
-  using: 'node16'
+  using: 'node20'
   main: 'dist/index.js'
