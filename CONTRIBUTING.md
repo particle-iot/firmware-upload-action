@@ -1,7 +1,7 @@
 # Contributions
 
 All contributors must first sign the 
-[Particle Individual Contributor License Agreement (CLA)](https://docs.google.com/a/particle.io/forms/d/1_2P-vRKGUFg5bmpcKLHO_qNZWGi5HKYnfrrkd-sbZoA/viewform), 
+[Particle Individual Contributor License Agreement (CLA)](https://part.cl/icla), 
 which is based on the Google CLA, and provides the Particle team a license to re-distribute your contributions.
 
 ## Submitting a pull request
